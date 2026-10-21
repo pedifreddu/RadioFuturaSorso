@@ -1,0 +1,19 @@
+RADIO FUTURA SORSO - PROGETTO IOS (BOZZA DA COMPILARE)
+
+Questo archivio contiene sorgenti Swift, logo originale e file project.yml per generare il progetto Xcode.
+Non contiene una app .ipa installabile e NON e stato compilato o testato su Mac/iPhone.
+
+SU MAC:
+1. Installare Xcode e XcodeGen (https://github.com/yonaskolb/XcodeGen).
+2. Aprire Terminale nella cartella RadioFuturaSorso-iOS.
+3. Eseguire: xcodegen generate
+4. Aprire RadioFuturaSorso.xcodeproj in Xcode.
+5. Impostare il team di firma Apple e verificare errori di compilazione e funzionamento.
+
+CARPLAY: richiede entitlement concesso da Apple. Se non e ancora concesso,
+la firma e distribuzione possono fallire: verificare e abilitare solo dopo approvazione.
+
+Prima della pubblicazione verificare: streaming, metadata, copertine, WhatsApp,
+audio in background, privacy policy, autorizzazioni e test su dispositivi reali.
+
+Non effettuare il pagamento Apple Developer sulla sola base di questo ZIP.

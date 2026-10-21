@@ -1,0 +1,28 @@
+name: RadioFuturaSorso
+options:
+  bundleIdPrefix: it.radiofuturasorso
+  deploymentTarget:
+    iOS: '16.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    TARGETED_DEVICE_FAMILY: '1,2'
+targets:
+  RadioFuturaSorso:
+    type: application
+    platform: iOS
+    sources:
+      - path: RadioFuturaSorso
+        excludes:
+          - Info.plist
+          - RadioFuturaSorso.entitlements
+    info:
+      path: RadioFuturaSorso/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: it.radiofuturasorso.app
+        INFOPLIST_FILE: RadioFuturaSorso/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+    entitlements:
+      path: RadioFuturaSorso/RadioFuturaSorso.entitlements

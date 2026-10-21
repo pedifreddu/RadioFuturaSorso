@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radio Futura Sorso</title>
+<meta name="theme-color" content="#142c4b">
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #142c4b;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  main { padding: 30px 20px; }
+  h1 { font-size: 30px; margin-bottom: 8px; }
+  p { color: #d5e3f5; }
+  button {
+    margin-top: 30px;
+    padding: 18px 48px;
+    border: 0;
+    border-radius: 40px;
+    background: white;
+    color: #142c4b;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  #status { margin-top: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>RADIO FUTURA SORSO</h1>
+  <p>La tua radio, ovunque tu sia</p>
+  <button id="play" onclick="toggleRadio()">▶ PLAY</button>
+  <p id="status">Premi Play per ascoltare la diretta</p>
+  <audio id="radio" preload="none"
+    src="https://marinadisorso.radioca.st/stream.mp3"></audio>
+</main>
+<script>
+const radio = document.getElementById("radio");
+const button = document.getElementById("play");
+const statusText = document.getElementById("status");
+
+async function toggleRadio() {
+  if (radio.paused) {
+    statusText.textContent = "Connessione alla radio...";
+    try {
+      await radio.play();
+    } catch (e) {
+      statusText.textContent = "Impossibile avviare la diretta";
+    }
+  } else {
+    radio.pause();
+  }
+}
+
+radio.addEventListener("playing", () => {
+  button.textContent = "⏸ PAUSA";
+  statusText.textContent = "● IN DIRETTA";
+});
+
+radio.addEventListener("pause", () => {
+  button.textContent = "▶ PLAY";
+  statusText.textContent = "Diretta in pausa";
+});
+
+radio.addEventListener("error", () => {
+  statusText.textContent = "Errore di collegamento alla radio";
+});
+</script>
+</body>
+</html>

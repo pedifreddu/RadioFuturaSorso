@@ -1,4 +1,3 @@
-
 workflows:
   radio_futura_sorso:
     name: Radio Futura Sorso iOS
@@ -7,8 +6,16 @@ workflows:
     environment:
       xcode: latest
     scripts:
-      - name: Verifica progetto iOS
+      - name: Genera progetto Xcode
         script: |
-          echo "Controllo dei file del progetto"
-          find . -maxdepth 4 -type f | head -80
-          echo "Verifica completata"
+          brew install xcodegen
+          cd RadioFuturaSorso-iOS
+          xcodegen generate
+      - name: Compila app iOS
+        script: |
+          cd RadioFuturaSorso-iOS
+          xcodebuild -project RadioFuturaSorso.xcodeproj \
+            -scheme RadioFuturaSorso \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            CODE_SIGNING_ALLOWED=NO build

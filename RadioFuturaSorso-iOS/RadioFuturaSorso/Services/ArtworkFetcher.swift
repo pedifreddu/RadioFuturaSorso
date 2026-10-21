@@ -2,11 +2,11 @@
 //  ArtworkFetcher.swift
 //  Radio Futura Sorso
 //
-//  Scarica automaticamente le copertine ufficiali in alta risoluzione
-//  per la canzone attualmente in onda tramite l'API pubblica di Apple iTunes.
+//  Recupera automaticamente le copertine delle canzoni tramite Apple iTunes.
 //
 
 import UIKit
+import Foundation
 
 public final class ArtworkFetcher {
     public static let shared = ArtworkFetcher()
@@ -16,32 +16,58 @@ public final class ArtworkFetcher {
         cache.countLimit = 50
     }
 
-    public func fetchArtwork(forArtist artist: String, songTitle: String, completion: @escaping (UIImage?) -> Void) {
+    public func fetchArtwork(
+        forArtist artist: String,
+        songTitle: String,
+        completion: @escaping (UIImage?) -> Void
+    ) {
         let cleanArtist = artist.trimmingCharacters(in: .whitespacesAndNewlines)
-        let cleanTitle = songTitle.replacingOccurrences(of: "\(.*\)", with: "", options: .regularExpression)
+
+        let cleanTitle = songTitle
+            .replacingOccurrences(
+                of: #"\(.*?\)"#,
+                with: "",
+                options: .regularExpression
+            )
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        guard !cleanArtist.isEmpty, !cleanArtist.lowercased().contains("radio futura") else {
-            completion(nil)
+        guard !cleanArtist.isEmpty,
+              !cleanTitle.isEmpty,
+              !cleanArtist.lowercased().contains("radio futura") else {
+            DispatchQueue.main.async {
+                completion(nil)
+            }
             return
         }
 
         let cacheKey = "\(cleanArtist)-\(cleanTitle)" as NSString
+
         if let cachedImage = cache.object(forKey: cacheKey) {
-            completion(cachedImage)
+            DispatchQueue.main.async {
+                completion(cachedImage)
+            }
             return
         }
 
-        let searchTerm = "\(cleanArtist) \(cleanTitle)"
-        guard let encodedTerm = searchTerm.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let searchURL = URL(string: "https://itunes.apple.com/search?term=\(encodedTerm)&entity=song&limit=1") else {
-            completion(nil)
+        var components = URLComponents(string: "https://itunes.apple.com/search")
+        components?.queryItems = [
+            URLQueryItem(name: "term", value: "\(cleanArtist) \(cleanTitle)"),
+            URLQueryItem(name: "entity", value: "song"),
+            URLQueryItem(name: "limit", value: "1")
+        ]
+
+        guard let searchURL = components?.url else {
+            DispatchQueue.main.async {
+                completion(nil)
+            }
             return
         }
 
         URLSession.shared.dataTask(with: searchURL) { [weak self] data, _, error in
-            guard let self = self, let data = data, error == nil else {
-                completion(nil)
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
                 return
             }
 
@@ -53,27 +79,40 @@ public final class ArtworkFetcher {
             }
 
             guard let response = try? JSONDecoder().decode(SearchResponse.self, from: data),
-                  let firstResult = response.results.first,
-                  let smallArtworkURLString = firstResult.artworkUrl100 else {
-                completion(nil)
-                return
-            }
-
-            // Trasforma la risoluzione da 100x100 a 600x600 per Retina Display
-            let highResURLString = smallArtworkURLString.replacingOccurrences(of: "100x100bb.jpg", with: "600x600bb.jpg")
-            guard let highResURL = URL(string: highResURLString) else {
-                completion(nil)
-                return
-            }
-
-            URLSession.shared.dataTask(with: highResURL) { [weak self] imgData, _, _ in
-                guard let imgData = imgData, let image = UIImage(data: imgData) else {
+                  let artworkString = response.results.first?.artworkUrl100 else {
+                DispatchQueue.main.async {
                     completion(nil)
+                }
+                return
+            }
+
+            let highResString = artworkString.replacingOccurrences(
+                of: "100x100bb",
+                with: "600x600bb"
+            )
+
+            guard let imageURL = URL(string: highResString) else {
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
+                return
+            }
+
+            URLSession.shared.dataTask(with: imageURL) { imageData, _, imageError in
+                guard let imageData = imageData,
+                      imageError == nil,
+                      let image = UIImage(data: imageData) else {
+                    DispatchQueue.main.async {
+                        completion(nil)
+                    }
                     return
                 }
 
                 self?.cache.setObject(image, forKey: cacheKey)
-                completion(image)
+
+                DispatchQueue.main.async {
+                    completion(image)
+                }
             }.resume()
         }.resume()
     }
